@@ -1,0 +1,3 @@
+[submodule "NebulaStablecoin/lib/forge-std"]
+	path = NebulaStablecoin/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
