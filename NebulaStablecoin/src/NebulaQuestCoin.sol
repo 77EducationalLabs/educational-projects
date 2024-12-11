@@ -95,7 +95,7 @@ contract NebulaQuestCoin is ERC20, AccessControl, ERC20Permit {
         * @param _amount The amount of tokens to be burned
         * @dev This functions must only accessed by authorized actors.
     */
-    function burn(uint256 _amount) external  onlyRole(MINTER_ROLE){
+    function burn(uint256 _amount) external onlyRole(MINTER_ROLE){
         emit NebulaQuestCoin_TokenBurned(_amount);
 
         _burn(msg.sender, _amount);

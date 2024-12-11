@@ -9,10 +9,10 @@ contract NebulaQuestCoinScript is Script {
 
     function setUp() public {}
 
-    function run(address _admin, address _minter) public {
+    function run(address _admin, address _minter) public returns(NebulaQuestCoin _stablecoin){
         vm.startBroadcast();
 
-        stablecoin = new NebulaQuestCoin("NebulaQuestCoin","NQC", _admin, _minter);
+        _stablecoin = new NebulaQuestCoin("NebulaQuestCoin","NQC", _admin, _minter);
 
         vm.stopBroadcast();
     }
