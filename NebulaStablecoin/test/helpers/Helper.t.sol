@@ -7,11 +7,13 @@ import {Test, console2} from "forge-std/Test.sol";
 
 //Protocol Contracts
 import {NebulaQuestCoin} from "../../src/NebulaQuestCoin.sol";
+import {NebulaQuest} from "../../src/NebulaQuest.sol";
 
 abstract contract Helper is Test {
 
     //Contracts Instances
     NebulaQuestCoin stablecoin;
+    NebulaQuest quest;
 
     //Stablecoin variables
     bytes32 ADMIN_ROLE;
@@ -34,9 +36,11 @@ abstract contract Helper is Test {
 
     // Errors
     error AccessControlUnauthorizedAccount(address account, bytes32 role);
+    error OwnableUnauthorizedAccount(address caller);
 
     function setUp() external {
         stablecoin = new NebulaQuestCoin("NebulaQuestCoin","NQC", s_admin, s_minter);
+        quest = new NebulaQuest("NebulaQuestCoin","NQC", s_admin);
 
         ADMIN_ROLE = stablecoin.DEFAULT_ADMIN_ROLE();
         MINTER_ROLE = stablecoin.MINTER_ROLE();

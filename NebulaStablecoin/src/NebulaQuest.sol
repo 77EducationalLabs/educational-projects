@@ -14,6 +14,8 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 error NebulaQuest_MustAnswerAllQuestions(uint256 expectedNumberOfAnswers, uint256 numberOfAnswers);
 ///@notice error emitted when an admin input the wrong amount of answers
 error NebulaQuest_WrongAmountOfAnswers(uint8 expectedNumberOfAnswers, uint256 numberOfAnswers);
+///@notice error emitted when the score input is invalid
+error NebulaQuest_InvalidScore(uint16 scoreInput, uint16 minScore, uint16 maxScore);
 
 ///Interfaces, Libraries///
 
@@ -33,10 +35,14 @@ contract NebulaQuest is Ownable {
     ///Variables///
     ///@notice the minimum value a user must score to  graduate
     uint16 constant MIN_SCORE = 800;
+    ///@notice the maximum value a user can score
+    uint16 constant MAX_SCORE = 1_000;
     ///@notice the score per correct answer
     uint16 constant POINTS_ANSWER = 100;
     ///@notice the allowed number of answers
     uint8 constant NUM_ANSWERS = 10;
+    ///@notice token standard decimals
+    uint256 constant DECIMALS = 10**18;
 
     ///Storage///
     ///@notice mapping to store the answers for each exam
@@ -99,6 +105,8 @@ contract NebulaQuest is Ownable {
             });
 
             emit NebulaQuest_ExamPassed(msg.sender, _examIndex, score);
+
+            _distributeRewards(score);
         }
 
         emit NebulaQuest_ExamFailed(msg.sender, _examIndex, score);
@@ -119,12 +127,14 @@ contract NebulaQuest is Ownable {
 
         emit NebulaQuest_AnswersUpdated(_examIndex);
     }
-
     ///public///
 
     ///internal///
 
     ///private///
+    function _distributeRewards(uint16 _score) private {
+        i_coin.mint(msg.sender, _score * DECIMALS);
+    }
 
     ///view & pure///
 
