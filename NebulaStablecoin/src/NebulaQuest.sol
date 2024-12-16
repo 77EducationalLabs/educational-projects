@@ -11,11 +11,13 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 ///Errors///
 ///@notice error emitted when an user don't answer all questions
-error NebulaQuest_MustAnswerAllQuestions(uint256 expectedNumberOfAnswers, uint256 numberOfAnswers);
+error NebulaQuest_MustAnswerAllQuestions(uint256 numberOfAnswers, uint256 expectedNumberOfAnswers);
 ///@notice error emitted when an admin input the wrong amount of answers
-error NebulaQuest_WrongAmountOfAnswers(uint8 expectedNumberOfAnswers, uint256 numberOfAnswers);
+error NebulaQuest_WrongAmountOfAnswers(uint256 numberOfAnswers, uint8 expectedNumberOfAnswers);
 ///@notice error emitted when the score input is invalid
 error NebulaQuest_InvalidScore(uint16 scoreInput, uint16 minScore, uint16 maxScore);
+///@notice error emitted when an invalid examIndex is used
+error NebulaQuest_NonExistentExam(uint8 examIndex);
 
 ///Interfaces, Libraries///
 
@@ -30,7 +32,7 @@ contract NebulaQuest is Ownable {
 
     ///Instances///
     ///@notice immutable variable to store the contract instance
-    NebulaQuestCoin immutable i_coin;
+    NebulaQuestCoin public immutable i_coin;
 
     ///Variables///
     ///@notice the minimum value a user must score to  graduate
@@ -43,12 +45,14 @@ contract NebulaQuest is Ownable {
     uint8 constant NUM_ANSWERS = 10;
     ///@notice token standard decimals
     uint256 constant DECIMALS = 10**18;
+    ///@notice the number to check against to check for empty arrays
+    uint256 constant ONE = 1;
 
     ///Storage///
     ///@notice mapping to store the answers for each exam
     mapping(uint8 examNumber => bytes32[] answers) s_examAnswers;
     ///@notice mapping to store the student's records
-    mapping(address student => ExamResult) s_studentsScore;
+    mapping(address student => ExamResult) public s_studentsScore;
 
     ///Events///
     ///@notice event emitted when the user scores more than or equal to the `MIN_SCORE` threshold
@@ -88,7 +92,8 @@ contract NebulaQuest is Ownable {
     function submitAnswers(uint8 _examIndex, bytes32[] memory _encryptedAnswers) external {
         bytes32[] memory examAnswers = s_examAnswers[_examIndex];
 
-        if(examAnswers.length != _encryptedAnswers.length) revert NebulaQuest_MustAnswerAllQuestions(examAnswers.length, _encryptedAnswers.length);
+        if(examAnswers.length < ONE) revert NebulaQuest_NonExistentExam(_examIndex);
+        if(examAnswers.length != _encryptedAnswers.length) revert NebulaQuest_MustAnswerAllQuestions(_encryptedAnswers.length, examAnswers.length);
 
         uint16 score;
 
@@ -107,9 +112,10 @@ contract NebulaQuest is Ownable {
             emit NebulaQuest_ExamPassed(msg.sender, _examIndex, score);
 
             _distributeRewards(score);
+        } else {
+            emit NebulaQuest_ExamFailed(msg.sender, _examIndex, score);
         }
 
-        emit NebulaQuest_ExamFailed(msg.sender, _examIndex, score);
     }
 
     /**
@@ -121,7 +127,7 @@ contract NebulaQuest is Ownable {
     */
     function answerSetter(uint8 _examIndex, bytes32[] memory _correctAnswers) external onlyOwner {
         uint256 numberOfAnswers = _correctAnswers.length;
-        if(numberOfAnswers != NUM_ANSWERS) revert NebulaQuest_WrongAmountOfAnswers(NUM_ANSWERS, numberOfAnswers);
+        if(numberOfAnswers != NUM_ANSWERS) revert NebulaQuest_WrongAmountOfAnswers(numberOfAnswers, NUM_ANSWERS);
 
         s_examAnswers[_examIndex] = _correctAnswers;
 
