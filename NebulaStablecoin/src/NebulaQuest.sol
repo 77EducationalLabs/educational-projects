@@ -8,6 +8,8 @@ import {NebulaQuestCoin} from "./NebulaQuestCoin.sol";
 
 ///@notice OpenZeppelin tools
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 ///Errors///
 ///@notice error emitted when an user don't answer all questions
@@ -22,6 +24,9 @@ error NebulaQuest_NonExistentExam(uint8 examIndex);
 ///Interfaces, Libraries///
 
 contract NebulaQuest is Ownable {
+
+    /// Type Declaration ///
+    using SafeERC20 for IERC20;
 
     ///Custom Types///
     ///@notice struct to organize exams data
