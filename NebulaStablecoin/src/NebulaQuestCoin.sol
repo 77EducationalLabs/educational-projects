@@ -58,7 +58,9 @@ contract NebulaQuestCoin is ERC20, AccessControl, ERC20Permit {
     /**
         * @notice Constructor to initialize inherited storage variables
         * @param _name The ERC20 token name
-        * @param _symbol The ERC20 token symbol 
+        * @param _symbol The ERC20 token symbol
+        * @param _admin the contract's owner/admin
+        * @param _minter the address allowed to MINT tokens
     */
     constructor(
         string memory _name, 
