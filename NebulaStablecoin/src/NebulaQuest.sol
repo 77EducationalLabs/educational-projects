@@ -5,11 +5,13 @@ pragma solidity 0.8.26;
 ///Imports///
 ///@notice stablecoin contract
 import {NebulaQuestCoin} from "./NebulaQuestCoin.sol";
+import {NebulaEvolution} from "./NebulaEvolution.sol";
 
 ///@notice OpenZeppelin tools
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 ///Errors///
 ///@notice error emitted when an user don't answer all questions
@@ -23,21 +25,22 @@ error NebulaQuest_NonExistentExam(uint8 examIndex);
 
 ///Interfaces, Libraries///
 
-contract NebulaQuest is Ownable {
+contract NebulaQuest is Ownable, ReentrancyGuard {
 
     /// Type Declaration ///
     using SafeERC20 for IERC20;
 
     ///Custom Types///
-    ///@notice struct to organize exams data
-    struct ExamResult{
-        uint8 stageNumber;
-        uint16 score;
+    ///@notice struct to organize the student info
+    struct Student{
+        uint256 nftId;
+        address[] certificates;
     }
 
     ///Instances///
     ///@notice immutable variable to store the contract instance
     NebulaQuestCoin public immutable i_coin;
+    NebulaEvolution public immutable i_nft;
 
     ///Variables///
     ///@notice the minimum value a user must score to  graduate
@@ -57,7 +60,9 @@ contract NebulaQuest is Ownable {
     ///@notice mapping to store the answers for each exam
     mapping(uint8 examNumber => bytes32[] answers) s_examAnswers;
     ///@notice mapping to store the student's records
-    mapping(address student => ExamResult) public s_studentsScore;
+    mapping(address student => mapping(uint8 examIndex => uint16 score)) public s_studentsScore;
+    ///@notice mapping to store student's information
+    mapping(address student => Student) public s_studentInfo;
 
     ///Events///
     ///@notice event emitted when the user scores more than or equal to the `MIN_SCORE` threshold
@@ -74,17 +79,14 @@ contract NebulaQuest is Ownable {
     ///constructor///
     /**
         * @notice constructor function to initialize contract variables and deploy the stablecoin
-        * @param _name Stablecoin's name
-        * @param _symbol Stablecoin's symbol
         * @param _admin Multi-sig wallet
         * @dev none of the params should be empty or invalid.
     */
     constructor (
-        string memory _name, 
-        string memory _symbol,
         address _admin
     ) Ownable(_admin) {
-        i_coin = new NebulaQuestCoin(_name, _symbol, _admin, address(this));
+        i_coin = new NebulaQuestCoin("Nebula Stablecoin","NSN", _admin, address(this));
+        i_nft = new NebulaEvolution("Nebula Evolution","NET", _admin, address(this));
     }
 
     ///external///
@@ -94,7 +96,7 @@ contract NebulaQuest is Ownable {
         * @param _encryptedAnswers User encrypted answer's array
         * @dev It should revert if the number of user answers is less than the number os stored answers
     */
-    function submitAnswers(uint8 _examIndex, bytes32[] memory _encryptedAnswers) external {
+    function submitAnswers(uint8 _examIndex, bytes32[] memory _encryptedAnswers) external nonReentrant{
         bytes32[] memory examAnswers = s_examAnswers[_examIndex];
 
         if(examAnswers.length < ONE) revert NebulaQuest_NonExistentExam(_examIndex);
@@ -109,10 +111,7 @@ contract NebulaQuest is Ownable {
         }
 
         if(score >= MIN_SCORE){
-            s_studentsScore[msg.sender] = ExamResult({
-                stageNumber: _examIndex,
-                score: score
-            });
+            s_studentsScore[msg.sender][_examIndex] = score;
 
             emit NebulaQuest_ExamPassed(msg.sender, _examIndex, score);
 
@@ -120,7 +119,6 @@ contract NebulaQuest is Ownable {
         } else {
             emit NebulaQuest_ExamFailed(msg.sender, _examIndex, score);
         }
-
     }
 
     /**
@@ -143,8 +141,27 @@ contract NebulaQuest is Ownable {
     ///internal///
 
     ///private///
+    /**
+        *@notice private function to handle rewards distribution
+        *@param _score the total points the user achieved on the exam
+    */
     function _distributeRewards(uint16 _score) private {
         i_coin.mint(msg.sender, _score * DECIMALS);
+
+        uint256 score = i_coin.balanceOf(msg.sender) / DECIMALS;
+
+        if(i_nft.balanceOf(msg.sender) >= 1){
+            Student memory student = s_studentInfo[msg.sender];
+            
+            i_nft.updateNFT(student.nftId, score);
+        } else {
+            uint256 nftId = i_nft.safeMint(msg.sender);
+            address[] memory certificates = new address[](0);
+
+            s_studentInfo[msg.sender] = Student(nftId, certificates);
+
+            i_nft.updateNFT(nftId, score);
+        }
     }
 
     ///view & pure///

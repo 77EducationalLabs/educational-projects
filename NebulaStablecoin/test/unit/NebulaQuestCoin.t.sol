@@ -14,12 +14,12 @@ contract NebulaQuestCoinTest is Helper {
     //// Stablecoin Basic Info's ////
         //Stablecoin's name check
         function test_stablecoinName() public view {
-            assertEq(keccak256(abi.encodePacked("NebulaQuestCoin")), keccak256(abi.encodePacked(stablecoin.name())));
+            assertEq(keccak256(abi.encodePacked("Nebula Stablecoin")), keccak256(abi.encodePacked(stablecoin.name())));
         }
 
         //Stablecoin's symbol check
         function test_stablecoinSymbol() public view {
-            assertEq(keccak256(abi.encodePacked("NQC")), keccak256(abi.encodePacked(stablecoin.symbol())));
+            assertEq(keccak256(abi.encodePacked("NSN")), keccak256(abi.encodePacked(stablecoin.symbol())));
         }
 
         //// Access Control Roles ////

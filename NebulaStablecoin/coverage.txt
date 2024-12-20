@@ -1,0 +1,8 @@
+Uncovered for src/NebulaEvolution.sol:
+- Branch (branch: 1, path: 0) (location: source ID 65, lines 132..133, bytes 5651..5688, hits: 0)
+- Statement (location: source ID 65, lines 132..133, bytes 5651..5688, hits: 0)
+- Line (location: source ID 65, lines 163..166, bytes 6601..6784, hits: 0)
+- Function "supportsInterface" (location: source ID 65, lines 163..166, bytes 6601..6784, hits: 0)
+- Line (location: source ID 65, lines 164..165, bytes 6734..6777, hits: 0)
+- Statement (location: source ID 65, lines 164..165, bytes 6734..6777, hits: 0)
+- Statement (location: source ID 65, lines 164..165, bytes 6741..6777, hits: 0)

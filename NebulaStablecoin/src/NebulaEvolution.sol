@@ -52,6 +52,8 @@ contract NebulaEvolution is ERC721, ERC721URIStorage, AccessControl {
     event NebulaEvolution_TheGasIsFreezingABirthIsOnTheWay(uint256 tokenId);
     ///@notice event emitted when a level is updated
     event NebulaEvolution_LevelUpdated(uint256 level,  uint256 amountOfExp);
+    ///@notice event emitted when a NFT metadata is updated
+    event NebulaEvolution_NFTUpdated(uint256 tokenId, string finalURI);
 
     /**
         * @notice Constructor to initialize inherited storage variables
@@ -85,24 +87,22 @@ contract NebulaEvolution is ERC721, ERC721URIStorage, AccessControl {
         *@dev only the MINTER can call this functions
         *@dev One user can't have multiple NFTs per wallet
     */
-    function safeMint(address _user) external onlyRole(MINTER_ROLE){
+    function safeMint(address _user) external onlyRole(MINTER_ROLE) returns(uint256 tokenId){
         if(balanceOf(_user) >= ONE) revert NebulaEvolution_AlreadyHasAnNFT();
 
-        uint256 tokenId = s_tokenId;
+        tokenId = s_tokenId;
 
         string memory uri = Base64.encode(
             bytes(
                 string(
                     abi.encodePacked(
                         '{"name": "', s_starInformation[1].name, '",'
-                        '"description": "Bellum Galaxy Star Evolution",',
+                        '"description": "Nebula Evolution",',
                         '"image": "', s_starInformation[1].image, '",'
                         '"attributes": [',
                             '{"trait_type": "Exp",',
                             '"value": ', "0",'}',
                             ',{"trait_type": "Level",',
-                            '"value": ', "0",'}',
-                            ',{"trait_type": "Next Level",',
                             '"value": ', "1",'}',
                         ']}'
                     )
@@ -128,11 +128,19 @@ contract NebulaEvolution is ERC721, ERC721URIStorage, AccessControl {
      * @param _exp The EXP amount received
      * @dev this functions must only be called by Main contract
     */
-    function updateNFT(uint256 _tokenId, uint256 _tokenLevel, uint256 _exp) external onlyRole(MINTER_ROLE){
+    function updateNFT(uint256 _tokenId, uint256 _exp) external onlyRole(MINTER_ROLE){
         if(_tokenId > s_tokenId) revert NebulaEvolution_InvalidNFTId();
 
-        uint256 nftLevel = _tokenLevel == TOTAL_LEVELS ? _tokenLevel : ++_tokenLevel;
+        uint256 i = 1;
+        uint256 nftLevel;
 
+        while(i < TOTAL_LEVELS){
+            ++i;
+            if(_exp < s_expPerLevel[i]){
+                nftLevel = i - 1;
+                break;
+            }
+        }
         _updateNFTMetadata(_tokenId, nftLevel, _exp);
     }
 
@@ -169,31 +177,32 @@ contract NebulaEvolution is ERC721, ERC721URIStorage, AccessControl {
         *@param _exp the total amount of experience this NFT have
     */
     function _updateNFTMetadata(uint256 _tokenId, uint256 _nftLevel, uint256 _exp) private {
-        uint256 nextLvl = _nftLevel == TOTAL_LEVELS ? _nftLevel : ++_nftLevel;
 
         string memory uri = Base64.encode(
             bytes(
                 string(
                     abi.encodePacked(
                         '{"name": "', s_starInformation[_nftLevel].name, '",'
-                        '"description": "Bellum Galaxy Star Evolution",',
+                        '"description": "Nebula Evolution",',
                         '"image": "', s_starInformation[_nftLevel].image, '",'
                         '"attributes": [',
                             ',{"trait_type": "Level",',
                             '"value": ', _nftLevel.toString(),'}',
                             '{"trait_type": "Exp",',
                             '"value": ', _exp.toString(),'}',
-                            ',{"trait_type": "Next Level",',
-                            '"value": ', nextLvl.toString(),'}',
                         ']}'
                     )
                 )
             )
         );
+
         // Create token URI
         string memory finalURI = string(
             abi.encodePacked("data:application/json;base64,", uri)
         );
+        
+        emit NebulaEvolution_NFTUpdated(_tokenId, finalURI);
+
         _setTokenURI(_tokenId, finalURI);
     }
 

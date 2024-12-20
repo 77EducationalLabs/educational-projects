@@ -99,10 +99,7 @@ contract NebulaQuestTest is Helper {
             emit NebulaQuest_ExamPassed(s_user01, examNumber, 1000);
             quest.submitAnswers(examNumber, correctAnswers);
 
-            (uint8 stage, uint16 score) = quest.s_studentsScore(s_user01);
-
-            assertEq(stage, examNumber);
-            assertEq(score, 1000);
+            assertEq(quest.s_studentsScore(s_user01, examNumber), 1000);
         }
 
         //@Bug Solved
