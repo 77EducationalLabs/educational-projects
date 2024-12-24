@@ -82,7 +82,7 @@ contract KipuBank {
         s_withdrawsCounter = s_withdrawsCounter +1;
         s_vault[msg.sender] -= _amount;
 
-        _processDeposit(_amount);
+        _processTransfer(_amount);
     }
 
     /**
@@ -97,7 +97,7 @@ contract KipuBank {
         *@notice internal function to process the eth transfer from: contract -> to: user
         *@dev emits an event is successful
     */
-    function _processDeposit(uint256 _amount) private {
+    function _processTransfer(uint256 _amount) private {
 
         emit KipuBank_SuccessfullyWithdrawn(msg.sender, _amount);
 
