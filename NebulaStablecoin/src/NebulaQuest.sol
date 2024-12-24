@@ -62,7 +62,7 @@ contract NebulaQuest is Ownable, ReentrancyGuard {
     ///@notice mapping to store the student's records
     mapping(address student => mapping(uint8 examIndex => uint16 score)) public s_studentsScore;
     ///@notice mapping to store student's information
-    mapping(address student => Student) public s_studentInfo;
+    mapping(address student => Student) s_studentInfo;
 
     ///Events///
     ///@notice event emitted when the user scores more than or equal to the `MIN_SCORE` threshold
@@ -165,5 +165,8 @@ contract NebulaQuest is Ownable, ReentrancyGuard {
     }
 
     ///view & pure///
+    function getStudentInfo(address _student) external view returns(Student memory info){
+        info = s_studentInfo[_student];
+    }
 
 }

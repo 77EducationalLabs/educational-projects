@@ -82,6 +82,7 @@ contract NebulaQuest is Helper {
             assertEq(user01Balance, SCORE_TEN_OF_TEN);
 
             uint256 user01NFT = nft.balanceOf(s_user01);
+            assertEq(user01NFT, 1);
             assertEq(nft.ownerOf(0), s_user01);
         }
 

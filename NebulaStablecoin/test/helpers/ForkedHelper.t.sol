@@ -13,16 +13,21 @@ import {NebulaEvolution} from "../../src/NebulaEvolution.sol";
 //Helpers
 import {Strings} from "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
+import {IERC721Receiver} from "@openzeppelin/contracts/token/ERC721/IERC721Receiver.sol";
 
-abstract contract Helper is Test {
+abstract contract ForkedHelper is Test {
+
+    //Fork Utils
+    uint256 polygonFork;
+    string POL_RPC = vm.envString("POL_RPC");
 
     //Type Declarations
     using Strings for uint256;
 
+    NebulaQuest.Student student;
+
     //Contracts Instances
-    NebulaQuestCoin stablecoin;
     NebulaQuest quest;
-    NebulaEvolution evolution;
 
     //NebulaQuest variables
     NebulaQuestCoin coin;
@@ -78,25 +83,25 @@ abstract contract Helper is Test {
     error NebulaQuest_NonExistentExam(uint8);
     error NebulaEvolution_ThereAreOnlySevenLevels(uint256 level);
     error NebulaEvolution_AlreadyHasAnNFT();
-    error NebulaEvolution_InvalidNFTId();
 
     function setUp() external {
-        stablecoin = new NebulaQuestCoin("Nebula Stablecoin","NSN", s_admin, s_minter);
+        polygonFork = vm.createFork(POL_RPC);
+        vm.selectFork(polygonFork);
         quest = new NebulaQuest(s_admin);
-        evolution = new NebulaEvolution("Nebula Evolution","NET", s_admin, s_minter);
         coin = quest.i_coin();
         nft = quest.i_nft();
 
-        ADMIN_ROLE = stablecoin.DEFAULT_ADMIN_ROLE();
-        MINTER_ROLE = stablecoin.MINTER_ROLE();
+        ADMIN_ROLE = coin.DEFAULT_ADMIN_ROLE();
+        MINTER_ROLE = coin.MINTER_ROLE();
     }
 
+    /// MODIFIERS
     modifier mintTokens(){
         //Mint tokens
         vm.prank(s_minter);
         vm.expectEmit();
         emit NebulaQuestCoin_TokenMinted(s_user01, AMOUNT_TO_MINT);
-        stablecoin.mint(s_user01, AMOUNT_TO_MINT);
+        coin.mint(s_user01, AMOUNT_TO_MINT);
         _;
     }
 
@@ -125,17 +130,18 @@ abstract contract Helper is Test {
 
     modifier setLevels(){
         vm.startPrank(s_admin);
-        evolution.levelsSetter(LEVEL_ONE, EXP_ONE);
-        evolution.levelsSetter(LEVEL_TWO, EXP_TWO);
-        evolution.levelsSetter(LEVEL_THREE, EXP_THREE);
-        evolution.levelsSetter(LEVEL_FOUR, EXP_FOUR);
-        evolution.levelsSetter(LEVEL_FIVE, EXP_FIVE);
-        evolution.levelsSetter(LEVEL_SIX, EXP_SIX);
-        evolution.levelsSetter(LEVEL_SEVEN, EXP_SEVEN);
+        nft.levelsSetter(LEVEL_ONE, EXP_ONE);
+        nft.levelsSetter(LEVEL_TWO, EXP_TWO);
+        nft.levelsSetter(LEVEL_THREE, EXP_THREE);
+        nft.levelsSetter(LEVEL_FOUR, EXP_FOUR);
+        nft.levelsSetter(LEVEL_FIVE, EXP_FIVE);
+        nft.levelsSetter(LEVEL_SIX, EXP_SIX);
+        nft.levelsSetter(LEVEL_SEVEN, EXP_SEVEN);
         vm.stopPrank();
         _;
     }
 
+    /// HELPER FUNCTIONS
     function helperURI(string memory _name, string memory _image, uint256 _nftLevel, uint256 _exp) public pure returns(string memory finalURI){
         
         string memory uri = Base64.encode(
@@ -181,5 +187,9 @@ abstract contract Helper is Test {
         vm.expectEmit();
         emit NebulaQuest_AnswersUpdated(examNumber);
         quest.answerSetter(examNumber, correctAnswers);
+    }
+
+    function interfaceReturnsTrue() public returns(bool isInterface){
+        isInterface = nft.supportsInterface(IERC721Receiver.onERC721Received.selector);
     }
 }

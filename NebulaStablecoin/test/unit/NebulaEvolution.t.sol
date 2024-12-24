@@ -97,6 +97,14 @@ contract NebulaEvolutionTest is Helper {
             vm.expectRevert(abi.encodeWithSelector(AccessControlUnauthorizedAccount.selector, address(this), MINTER_ROLE));
             evolution.updateNFT(0, EXP_TWO);
         }
+
+        function test_updateNFTRevertBecauseID() public setLevels{
+            uint256 tokenId = 10;
+
+            vm.startPrank(s_minter);
+            vm.expectRevert(abi.encodeWithSelector(NebulaEvolution_InvalidNFTId.selector));
+            evolution.updateNFT(tokenId, EXP_TWO);
+        }
     
         function test_updateNFTSucceed() public setLevels{
             uint256 tokenId = 0;

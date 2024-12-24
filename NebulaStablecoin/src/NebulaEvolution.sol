@@ -135,11 +135,11 @@ contract NebulaEvolution is ERC721, ERC721URIStorage, AccessControl {
         uint256 nftLevel;
 
         while(i < TOTAL_LEVELS){
-            ++i;
             if(_exp < s_expPerLevel[i]){
                 nftLevel = i - 1;
                 break;
             }
+            ++i;
         }
         _updateNFTMetadata(_tokenId, nftLevel, _exp);
     }
@@ -205,6 +205,5 @@ contract NebulaEvolution is ERC721, ERC721URIStorage, AccessControl {
 
         _setTokenURI(_tokenId, finalURI);
     }
-
 }
 
