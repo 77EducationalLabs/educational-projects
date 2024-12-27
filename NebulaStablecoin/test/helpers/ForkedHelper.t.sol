@@ -189,7 +189,7 @@ abstract contract ForkedHelper is Test {
         quest.answerSetter(examNumber, correctAnswers);
     }
 
-    function interfaceReturnsTrue() public returns(bool isInterface){
+    function interfaceReturnsTrue() public view returns(bool isInterface){
         isInterface = nft.supportsInterface(IERC721Receiver.onERC721Received.selector);
     }
 }

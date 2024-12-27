@@ -151,7 +151,7 @@ contract NebulaQuestForkedTest is ForkedHelper {
         }
 
     /// SupportsInterface
-        function test_interfaceReturnsTrue() external {
+        function test_interfaceReturnsTrue() external view {
             assertEq(interfaceReturnsTrue(), false);
         }
 }
