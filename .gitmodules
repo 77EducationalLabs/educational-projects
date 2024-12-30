@@ -10,3 +10,6 @@
 [submodule "EthKipu/lib/forge-std"]
 	path = EthKipu/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "students-faucets/lib/forge-std"]
+	path = students-faucets/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
