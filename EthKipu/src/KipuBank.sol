@@ -64,7 +64,7 @@ contract KipuBank {
         *@dev after the transaction contract balance should not be bigger than the bank cap
     */
     function deposit() external payable {
-        if(address(this).balance + msg.value > i_bankCap) revert KipuBank_BankCapReached(i_bankCap);
+        if(address(this).balance > i_bankCap) revert KipuBank_BankCapReached(i_bankCap);
 
         s_depositsCounter = s_depositsCounter + 1;
         s_vault[msg.sender] += msg.value;
