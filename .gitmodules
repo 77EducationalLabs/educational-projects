@@ -13,3 +13,6 @@
 [submodule "students-faucets/lib/forge-std"]
 	path = students-faucets/lib/forge-std
 	url = https://github.com/foundry-rs/forge-std
+[submodule "scroll-workshop/jokes-lotery/lib/forge-std"]
+	path = scroll-workshop/jokes-lotery/lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
